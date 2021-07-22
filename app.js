@@ -9,7 +9,7 @@ const orderRoutes = require('./api/routes/order-route');
 const connectionString = process.env.DB_URL;
 
 //MongoDB connection
-mongoose.connect(connectionString,{useNewUrlParser:true});
+mongoose.connect(connectionString,{useNewUrlParser:true,useUnifiedTopology: true});
 
 mongoose.connection.on("error", function(error) {
     console.log(error)
