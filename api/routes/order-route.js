@@ -1,20 +1,67 @@
 const express = require('express');
 const router = express.Router();
-
+const mongoose = require('mongoose');
+const Order = require('../models/order-schema');
+const Product = require('../models/product-schema');
 /*
 GET Request Interface.
-Returns all available order
+Returns all available orders
 */
 router.get('/', (req,res,next)=>{
-        res.status(200).json({message:"Fetched All Orders"});        
+        Order.find()
+        .select('-__v')
+        .populate('product', 'name price')
+        .exec()
+        .then(
+                docs=>{
+                        res.status(200).json({
+                                count:docs.length,
+                                orders:docs
+                        });
+                }
+        )
+        .catch(
+                error=>{
+                        res.status(500).json({error:error});
+                }
+        );      
 });
 
 /*
 POST Request Interface.
-Creates new Product record
+Creates new Order record
 */
 router.post('/', (req,res,next)=>{
-        res.status(201).json({message:"Created new Order"})
+        Product.findById(req.body.productID)
+        .exec()
+        .then(
+                product=>{
+                        if(product){
+                                const order = new Order(
+                                        {
+                                                _id: new mongoose.Types.ObjectId(),
+                                                quantity:req.body.quantity,
+                                                product:req.body.productID
+                                        }
+                                );
+                                return order.save();
+                        }   
+                }
+        ).then(
+          result=>{
+                res.status(201).json({message:"Created new Order",order:result});
+          }
+        )
+        .catch(
+                error=>{
+                        res.status(500).json(
+                                {
+                                        message:"Product Not Found",
+                                        error:error
+                                }
+                                );
+                }
+        );  
 });
 
 /*
@@ -23,7 +70,28 @@ Returns specific order based on param@orderID
 */
 router.get('/:orderID', (req,res,next)=>{
         const orderID = req.params.orderID;
-        res.status(200).json({message:"Fetched Order ID: "+orderID});        
+        Order.findById({_id:orderID})
+        .select('-__v')
+        .populate('product', 'name price')
+        .exec()
+        .then(
+                order=>{
+                        if(order){
+                                res.status(200).json({message:"Fetched Order ID: "+orderID,order:order});  
+                        }
+                }         
+        )
+        .catch(
+                error=>{
+                        res.status(500).json(
+                                {
+                                        message:"Product Not Found",
+                                        error:error
+                                }
+                                );
+                }
+        )
+          
 });
 
 /*
@@ -42,7 +110,26 @@ Cancels specific order based on param@orderID
 */
 router.delete('/:orderID', (req,res,next)=>{
     const orderID = req.params.orderID;
-    res.status(200).json({message:"Cancelled Order ID: "+orderID});        
+
+    Order.findById({_id:orderID}).exec()
+    .then(
+            order=>{
+                    if(order){
+                        return Order.deleteOne({_id:orderID});
+                    }
+            }
+    )
+    .then(
+         result=>   {
+                res.status(200).json({message:"Cancelled Order ID: "+orderID});      
+            }
+    )
+    .catch(
+            error=>{
+                    res.status(500).json({message:"Could not complete operation",error:error});
+            }
+    );
+      
 });
 
 module.exports = router;

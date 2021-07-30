@@ -1,6 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const Product = require('../models/product-schema');
+const multer = require('multer');
+const storage = multer.diskStorage({
+    destination:function(req,file,cb){
+        cb(null,'./resources/upload/')
+    },
+    filename:function(req,file,cb){
+        cb(null,file.originalname);
+    }
+});
+const upload = multer({storage:storage});
 const router = express.Router();
 
 /*
@@ -9,7 +19,7 @@ Returns all available products
 */
 router.get('/', (req,res,next)=>{
         Product.find()
-        .select('name price _id')
+        .select('-__v')
         .exec()
         .then(
         docs =>{
@@ -29,7 +39,8 @@ router.get('/', (req,res,next)=>{
 POST Request Interface.
 Creates new Product record
 */
-router.post('/', (req,res,next)=>{
+router.post('/', upload.single('productImage'),(req,res,next)=>{
+    console.log(req.file);
         const product = new Product({
                 _id: new mongoose.Types.ObjectId(),
                 name:req.body.name,
