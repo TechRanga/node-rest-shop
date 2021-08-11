@@ -2,15 +2,29 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Product = require('../models/product-schema');
 const multer = require('multer');
+
+
 const storage = multer.diskStorage({
     destination:function(req,file,cb){
         cb(null,'./resources/upload/')
     },
     filename:function(req,file,cb){
-        cb(null,file.originalname);
+        cb(null, file.originalname);
     }
 });
-const upload = multer({storage:storage});
+
+const fileFilter = (req,res,cb)=>{
+    if(file.mimetype==='img/png' || file.mimetype==='application/octet-stream'){
+        cb(true);
+    }else{
+        cb(false);
+    }
+}
+
+const upload = multer({storage:storage, limits:{
+    fileSize:1024*1024*5
+}});
+
 const router = express.Router();
 
 /*
@@ -44,7 +58,8 @@ router.post('/', upload.single('productImage'),(req,res,next)=>{
         const product = new Product({
                 _id: new mongoose.Types.ObjectId(),
                 name:req.body.name,
-                price:req.body.price
+                price:req.body.price,
+                productImgURL:req.file.path
             });
         product.save().then(
             (result)=>{

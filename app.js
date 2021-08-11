@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 //import routes
 const productRoutes = require('./api/routes/product-route');
 const orderRoutes = require('./api/routes/order-route');
+const userRoutes = require('./api/routes/user-route');
 const connectionString = process.env.DB_URL;
 
 //MongoDB connection
@@ -38,6 +39,7 @@ app.use((req,res,next)=>{
 //use routes
 app.use('/product',productRoutes);
 app.use('/order',orderRoutes);
+app.use('/user',userRoutes);
 
 //error handling
 app.use('/',(req,res,next)=>{
