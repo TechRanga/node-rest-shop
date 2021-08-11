@@ -45,7 +45,21 @@ router.post('/signup', (req,res,next)=>{
     });
 });
 
+router.delete('/delete/:userID',(req,res,next)=>{
 
+    User.remove({_id:req.params.userID})
+    .exec()
+    .then(
+        response=>{
+            return res.status(200).json({message:"User deleted",response:response});
+        }
+    )
+    .catch(
+        error=>{
+            return res.status(500).json({message:"Could not complete operation",error:error});
+        }
+    )
+});
 
 
 
