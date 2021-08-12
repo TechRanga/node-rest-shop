@@ -8,7 +8,5 @@ router.post('/login',UserController.user_login);
 
 router.delete('/delete/:userID',UserController.user_delete);
 
-
-
 module.exports = router;
 
